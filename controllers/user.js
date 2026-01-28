@@ -31,7 +31,7 @@ exports.userById = async (req, res, next) => {
 
     const reviews = await Review.find(
       { reviewedUserId: req.params.userId },
-      { new: true }
+      { new: true },
     )
       .populate("reviewedBy", "_id name surname")
       .select("_id text reviewedBy reviewedUserId stars createdAt")
@@ -48,10 +48,10 @@ exports.userById = async (req, res, next) => {
 
     const orders = await Order.find(
       { addedBy: req.params.userId },
-      { new: true }
+      { new: true },
     )
       .select(
-        "_id category   make model year engine  description urgent location proposals updatedAt "
+        "_id category   make model year engine  description urgent location proposals updatedAt ",
       )
       .sort({ updatedAt: -1 })
       .exec();
@@ -61,9 +61,8 @@ exports.userById = async (req, res, next) => {
       reviews,
       averageStars,
       orders,
-      message: "Pocałujta w dupe wójta",
     });
-    // console.log("userById");
+
     next();
   } catch (error) {
     return next(error);
@@ -82,12 +81,10 @@ exports.updateUser = async (req, res, next) => {
       req.body,
       {
         new: true,
-      }
+      },
     )
       .select("_id name surname location mobile showMobile")
       .exec();
-
-    console.log("updated", updatedUser);
 
     res.json({ message: "Profil zaktualizowany.", updatedUser });
   } catch (error) {
@@ -98,20 +95,27 @@ exports.updateUser = async (req, res, next) => {
 exports.deleteUser = async (req, res) => {
   const { userId } = req.params;
   try {
-    let result = await cloudinary.api.delete_resources_by_prefix(
-      "order/" + userId
-    );
-    await cloudinary.api.delete_folder("order/" + userId);
-    res.json(result);
     const deletedUser = await User.findOneAndDelete({
       _id: userId,
     }).exec();
+
     await Order.deleteMany({ addedBy: userId });
-    await Proposal.deleteMany({ addedBy: userId });
+    await Proposal.deleteMany({
+      $or: [{ addedBy: userId }, { orderOwnerId: userId }],
+    });
     await Review.deleteMany({
       $or: [{ reviewedUserId: userId }, { reviewedBy: userId }],
     });
 
+    // check if cloudinary subfolder exists
+    const result = await cloudinary.api.sub_folders("order");
+    const folderExists = result.folders.some(
+      (folder) => folder.name === userId,
+    );
+    if (folderExists) {
+      await cloudinary.api.delete_resources_by_prefix("order/" + userId);
+      await cloudinary.api.delete_folder("order/" + userId);
+    }
     res.json({ message: "Profil usunięty z powodzeniem! Do zobaczenia!" });
   } catch (error) {
     res.json({ message: error });
@@ -130,5 +134,3 @@ exports.getUsers = async (req, res, next) => {
     return next(error);
   }
 };
-
-exports.sendMessage = async (req, res) => {};

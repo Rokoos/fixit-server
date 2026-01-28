@@ -6,7 +6,6 @@ require("dotenv").config({
 });
 
 exports.sendMessage = async (req, res, next) => {
-  // console.log("sendMessage", req.body);
   try {
     const result = validationResult(req);
     if (!result.isEmpty()) {

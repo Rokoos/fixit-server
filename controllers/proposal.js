@@ -40,12 +40,10 @@ exports.addProposal = async (req, res, next) => {
     await newProposal.save();
     let arr = [];
     if (req.user._id.toString() == req.body.orderOwnerId) {
-      console.log("jajco");
       arr = await Proposal.find({
         orderId: req.body.orderId,
       }).populate("addedBy", "_id name surname location");
     } else {
-      console.log("dupsko");
       arr = await Proposal.find({
         addedBy: req.user._id.toString(),
         orderId: req.body.orderId,
@@ -71,8 +69,6 @@ exports.addProposal = async (req, res, next) => {
 };
 ///////////////////////////////
 exports.editProposal = async (req, res, next) => {
-  console.log("editProposal params", req.body);
-  console.log("editProposal", req.body);
   try {
     const result = validationResult(req);
     if (!result.isEmpty()) {
@@ -144,7 +140,6 @@ exports.deleteProposal = async (req, res, next) => {
 };
 ////////////////////////////////
 exports.acceptanceToggle = async (req, res, next) => {
-  // console.log("acceptance", req.body);
   try {
     const proposal = await Proposal.findOneAndUpdate(
       { _id: req.params.id },
@@ -183,7 +178,7 @@ exports.acceptanceToggle = async (req, res, next) => {
         ? "Wybrano Twoją propozycję do realizacji. Poczekaj na wiadomość od  zleceniodawcy lub skontaktuj się z nim w celu ustalenia szczegółów, terminu, itp."
         : "Zleceniodawca zrezygnował z Twojej propozycji. Zalecamy edycję  i zmianę proponowanych warunków aby uczynić ją atrakcyjniejszą. ",
     };
-    // console.log("emailData", emailData);
+
     sendSimpleMessage(emailData);
 
     res.json({

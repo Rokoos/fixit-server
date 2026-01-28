@@ -51,28 +51,26 @@ const getData = (data) => {
 };
 
 exports.sendSimpleMessage = async (obj) => {
-  // const mailgun = new Mailgun(FormData);
-  // const mg = mailgun.client({
-  //   username: "api",
-  //   key: process.env.SENDING_API_KEY || "API_KEY",
-  //   // When you have an EU-domain, you must specify the endpoint:
-  //   url: process.env.BASE_URL,
-  // });
+  const mailgun = new Mailgun(FormData);
+  const mg = mailgun.client({
+    username: "api",
+    key: process.env.SENDING_API_KEY || "API_KEY",
+    // When you have an EU-domain, you must specify the endpoint:
+    url: process.env.BASE_URL,
+  });
+  try {
+    const data = await mg.messages.create("fixitservice.pl", {
+      from: "fixitservice.pl <postmaster@fixitservice.pl>",
+      // to: ["Marcin Widomski <joanna.chrominska@gmail.com>"],
+      // to: ["Marcin Widomski <m.widomski@tlen.pl>"],
+      to: [obj.email],
+      subject: obj.subject,
+      template: obj.template,
+      "h:X-Mailgun-Variables": JSON.stringify(getData(obj)),
+    });
 
-  console.log("mailgun", getData(obj));
-  // try {
-  //   const data = await mg.messages.create("fixitservice.pl", {
-  //     from: "fixitservice.pl <postmaster@fixitservice.pl>",
-  //     // to: ["Marcin Widomski <joanna.chrominska@gmail.com>"],
-  //     // to: ["Marcin Widomski <m.widomski@tlen.pl>"],
-  //     to: [obj.email],
-  //     subject: obj.subject,
-  //     template: obj.template,
-  //     "h:X-Mailgun-Variables": JSON.stringify(getData()),
-  //   });
-
-  //   console.log(data); // logs response data
-  // } catch (error) {
-  //   console.log(error); //logs any error
-  // }
+    console.log(data); // logs response data
+  } catch (error) {
+    console.log(error); //logs any error
+  }
 };

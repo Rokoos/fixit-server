@@ -21,7 +21,7 @@ exports.getOrder = async (req, res, next) => {
     let order = await Order.findOne({ _id: req.params.orderId })
       .populate("addedBy", "_id name surname mobile email")
       .select(
-        "_id addedBy description category subCategory make model year engine urgent agdCategory rtvCategory computerCategory gardenCategory active  createdAt updatedAt location mobile photos acceptedProposalId"
+        "_id addedBy description category subCategory make model year engine urgent agdCategory rtvCategory computerCategory gardenCategory active  createdAt updatedAt location mobile photos acceptedProposalId",
       )
       .exec();
 
@@ -32,27 +32,21 @@ exports.getOrder = async (req, res, next) => {
     let arr = [];
 
     if (req.user._id.toString() == order.addedBy._id) {
-      // console.log("jajco");
       arr = await Proposal.find({
         orderId: req.params.orderId,
       }).populate("addedBy", "_id name surname location");
-      // console.log("arr", arr);
-      // arr.forEach((el) => {
-      //   console.log("arr", el._id.toString() === order.acceptedProposalId);
-      // });
+
       if (order.acceptedProposalId) {
         if (!arr.some((el) => el._id.toString() === order.acceptedProposalId)) {
           order = await Order.findOneAndUpdate(
             { _id: req.params.orderId },
-            { acceptedProposalId: "" }
+            { acceptedProposalId: "" },
           )
             .populate("addedBy", "_id name surname mobile ")
             .select(
-              "_id addedBy description category subCategory make model year engine urgent agdCategory rtvCategory computerCategory gardenCategory active  createdAt updatedAt location mobile photos acceptedProposalId"
+              "_id addedBy description category subCategory make model year engine urgent agdCategory rtvCategory computerCategory gardenCategory active  createdAt updatedAt location mobile photos acceptedProposalId",
             )
             .exec();
-
-          // console.log("jajco");
         }
       }
     } else {
@@ -167,7 +161,7 @@ exports.editOrder = async (req, res, next) => {
 
       await Order.findOneAndUpdate(
         { _id: req.params.orderId },
-        { $pull: { photos: { public_id: { $in: req.body.imagesToDelete } } } }
+        { $pull: { photos: { public_id: { $in: req.body.imagesToDelete } } } },
       ).exec();
     }
 
@@ -219,7 +213,7 @@ exports.editOrder = async (req, res, next) => {
         description,
         $push: { photos: { $each: imgs } },
       },
-      { new: true }
+      { new: true },
     ).exec();
 
     let emailData = {
@@ -245,7 +239,7 @@ exports.editOrder = async (req, res, next) => {
 
 exports.deleteOrder = async (req, res, next) => {
   try {
-    if (req.body.length > 0) {
+    if (req.body.arr.length > 0) {
       await cloudinary.api.delete_resources(req.body.arr);
     }
 
@@ -278,10 +272,6 @@ exports.deleteOrder = async (req, res, next) => {
 
 ///////////////////////Filtering
 const filterOrders = (obj) => {
-  const isEmpty = (obj) => {
-    return Object.keys(obj).length === 0;
-  };
-
   let filters = {
     active: true,
   };
@@ -341,7 +331,7 @@ exports.getFilteredOrders = async (req, res, next) => {
       .skip(startIndex)
       .populate("addedBy", "_id name surname ")
       .select(
-        "_id category  make model year engine  agdCategory rtvCategory computerCategory description urgent createdAt location"
+        "_id category  make model year engine  agdCategory rtvCategory computerCategory description urgent createdAt location",
       )
       .sort([["createdAt", "desc"]])
       .exec();

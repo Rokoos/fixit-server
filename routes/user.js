@@ -6,7 +6,6 @@ const {
   getUsers,
   updateUser,
   deleteUser,
-  sendMessage,
 } = require("../controllers/user");
 const { authCheck } = require("../middlewares/auth");
 
@@ -38,9 +37,8 @@ router.patch(
       .isLength({ min: 3, max: 30 })
       .withMessage("Lokalizacja musi zawierać min 3 i max 32 znaków."),
   ],
-  updateUser
+  updateUser,
 );
-router.post("/message", sendMessage);
 router.post("/delete_user/:userId", authCheck, deleteUser);
 
 module.exports = router;
